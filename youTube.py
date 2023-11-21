@@ -2,6 +2,7 @@ import json
 from googleapiclient.discovery import build
 import pymongo
 import psycopg2
+import pandas as pd
 
 
 #api connection
@@ -47,21 +48,30 @@ insert=channel_information(channel_id)
 
 # connection to sql
 mydb=psycopg2.connect(host="localhost",
-                      user="User1",
-                      password="test1234",
-                      database="youtube_data1",
-                      port="5432")
+                      user="postgres",
+                      password="debu123",
+                      database="youtube_data",
+                      port="5433")
 cursor=mydb.cursor()
 
-create_query='''create table if not exists channels(channel_ID VARCHAR(255) PRIMARY KEY,
-                                                        channel_name VARCHAR(255),
-                                                        channel_viewCount INT,
-                                                        channel_description TEXT,
-                                                        channel_status VARCHAR(255),
-                                                        channel_subscriberCount INT)'''
+create_query='''create table if not exists channels(channel_id VARCHAR(255) PRIMARY KEY,
+                                                    channel_name VARCHAR(255),
+                                                    channel_viewCount INT,
+                                                    channel_description TEXT,
+                                                    channel_status VARCHAR(255),
+                                                    channel_subscriberCount INT)'''
 
 cursor.execute(create_query)
 mydb.commit()
+ch_list=[]
+db=client['Youtube_data']
+coll1=db['channel_details1']
+for ch_data in coll1.find({},{"_id":0, "channel_info":1}):
+   ch_list.append(ch_data['channel_info'])
+df=pd.DataFrame(ch_list)
+
+for index,row in df.iterrows():
+    print(index,":", row)
 
 
 
